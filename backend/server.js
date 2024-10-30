@@ -54,6 +54,38 @@ app.get('/users', (req, res) => {
   });
 });
 
+// Endpoint to change email
+app.post('/change-email', (req, res) => {
+  const { oldEmail, newEmail } = req.body;
+  const stmt = db.prepare('UPDATE users SET email = ? WHERE email = ?');
+  stmt.run(newEmail, oldEmail, function(err) {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'Email updated successfully' });
+  });
+  stmt.finalize();
+});
+
+// Endpoint to change password
+app.post('/change-password', (req, res) => {
+  const { email, oldPassword, newPassword } = req.body;
+  const stmt = db.prepare('UPDATE users SET password = ? WHERE email = ? AND password = ?');
+  stmt.run(newPassword, email, oldPassword, function(err) {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (this.changes === 0) {
+      return res.status(404).json({ message: 'User not found or incorrect password' });
+    }
+    res.status(200).json({ message: 'Password updated successfully' });
+  });
+  stmt.finalize();
+});
+
 // Start server
 app.listen(port, () => {
   console.log(`Server running on http://127.0.0.1:3000`);

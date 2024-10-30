@@ -17,33 +17,55 @@ export default function Parametres() {
   const [logoutVisible, setLogoutVisible] = useState(false);
 
   // Gestion de la modification d'email
-  const handleEmailChange = () => {
+  const handleEmailChange = async () => {
     if (newEmail === confirmEmail) {
-      setConfirmationVisible(true);
+      try {
+        const response = await fetch('http://localhost:3000/change-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ oldEmail, newEmail }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setConfirmationVisible(true);
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('An error occurred. Please try again.');
+      }
     } else {
       alert("Les adresses e-mail ne correspondent pas !");
     }
   };
 
-  const confirmEmailChange = () => {
-    console.log('Nouvel email:', newEmail);
-    setModalVisible(false);
-    setConfirmationVisible(false);
-  };
-
   // Gestion de la modification de mot de passe
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (newPassword === confirmPassword) {
-      setConfirmationPasswordVisible(true);
+      try {
+        const response = await fetch('http://localhost:3000/change-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: oldEmail, oldPassword, newPassword }),
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setConfirmationPasswordVisible(true);
+        } else {
+          alert(data.message);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('An error occurred. Please try again.');
+      }
     } else {
       alert("Les mots de passe ne correspondent pas !");
     }
-  };
-
-  const confirmPasswordChange = () => {
-    console.log('Nouveau mot de passe:', newPassword);
-    setPasswordModalVisible(false);
-    setConfirmationPasswordVisible(false);
   };
 
   // Gestion de la suppression du compte
@@ -127,34 +149,27 @@ export default function Parametres() {
         }}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Changer l'adresse e-mail</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Entrer votre ancien e-mail"
-              value={oldEmail}
-              onChangeText={setOldEmail}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Nouvelle adresse e-mail"
-              value={newEmail}
-              onChangeText={setNewEmail}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Confirmez votre adresse e-mail"
-              value={confirmEmail}
-              onChangeText={setConfirmEmail}
-            />
-            <Button title="Confirmer" onPress={handleEmailChange} />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.buttonText}>Annuler</Text>
-            </TouchableOpacity>
-          </View>
+          <Text>Changer l'email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ancien email"
+            value={oldEmail}
+            onChangeText={setOldEmail}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Nouvel email"
+            value={newEmail}
+            onChangeText={setNewEmail}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmer le nouvel email"
+            value={confirmEmail}
+            onChangeText={setConfirmEmail}
+          />
+          <Button title="Changer l'email" onPress={handleEmailChange} />
+          <Button title="Annuler" onPress={() => setModalVisible(false)} />
         </View>
       </Modal>
 
@@ -171,7 +186,7 @@ export default function Parametres() {
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>Êtes-vous sûr de vouloir changer d’email ?</Text>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.confirmButton, styles.yesButton]} onPress={confirmEmailChange}>
+              <TouchableOpacity style={[styles.confirmButton, styles.yesButton]} onPress={() => setModalVisible(true)}>
                 <Text style={styles.buttonText}>Oui</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.confirmButton, styles.noButton]} onPress={() => setConfirmationVisible(false)}>
@@ -183,46 +198,32 @@ export default function Parametres() {
       </Modal>
 
       {/* Modal pour modifier le mot de passe */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={passwordModalVisible}
-        onRequestClose={() => {
-          setPasswordModalVisible(!passwordModalVisible);
-        }}
-      >
+      <Modal visible={passwordModalVisible} animationType="slide">
         <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Changer le mot de passe</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ancien mot de passe"
-              value={oldPassword}
-              onChangeText={setOldPassword}
-              secureTextEntry
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Nouveau mot de passe"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Confirmez votre mot de passe"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-            />
-            <Button title="Confirmer" onPress={handlePasswordChange} />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setPasswordModalVisible(false)}
-            >
-              <Text style={styles.buttonText}>Annuler</Text>
-            </TouchableOpacity>
-          </View>
+          <Text>Changer le mot de passe</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ancien mot de passe"
+            value={oldPassword}
+            onChangeText={setOldPassword}
+            secureTextEntry
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Nouveau mot de passe"
+            value={newPassword}
+            onChangeText={setNewPassword}
+            secureTextEntry
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmer le nouveau mot de passe"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+          />
+          <Button title="Changer le mot de passe" onPress={handlePasswordChange} />
+          <Button title="Annuler" onPress={() => setPasswordModalVisible(false)} />
         </View>
       </Modal>
 
@@ -239,7 +240,7 @@ export default function Parametres() {
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>Êtes-vous sûr de vouloir changer de mot de passe ?</Text>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={[styles.confirmButton, styles.yesButton]} onPress={confirmPasswordChange}>
+              <TouchableOpacity style={[styles.confirmButton, styles.yesButton]} onPress={() => setPasswordModalVisible(true)}>
                 <Text style={styles.buttonText}>Oui</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.confirmButton, styles.noButton]} onPress={() => setConfirmationPasswordVisible(false)}>
@@ -365,6 +366,7 @@ buttoncontainer: {
   input: {
     width: '100%',
     borderColor: '#B3995B',
+   color: '#B3995B',
     borderWidth: 1,
     borderRadius: 5,
     padding: 10,
